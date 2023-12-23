@@ -4,17 +4,17 @@ from django.db import models
 
 class Customer(models.Model):
     username = models.CharField(db_column = "UserName",
-                                max_lenth = 10,
+                                max_length = 11,
                                 null = False)                                
     password = models.CharField(db_column = "Password",
-                                max_lenth = 10,
-                                min_length = 6,
+                                max_length = 10,
                                 null = False)
     name =  models.CharField(db_column = "Name",
-                             max_lenth = 20,
+                             max_length = 20,
                              null = False)
-    contact = models.PhoneNumberField(db_column = "contact",
+    contact = models.CharField(db_column = "contact",
                                       unique = 1,
+                                      max_length=11,
                                       null = False)
     email = models.EmailField(db_column = "Email",
                               null = False)
