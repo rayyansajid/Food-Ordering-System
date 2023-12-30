@@ -4,22 +4,22 @@ from django.db import models
 
 class Customer(models.Model):
     username = models.CharField(db_column = "UserName",
-                                max_lenth = 10,
+                                max_length = 10,
                                 null = False,
                                 blank = False)                                
     password = models.CharField(db_column = "Password",
-                                max_lenth = 10,
-                                min_length = 6,
+                                max_length = 10,
                                 null = False,
                                 blank = False)
     name =  models.CharField(db_column = "Name",
-                             max_lenth = 20,
+                             max_length = 20,
                             null = False,
                             blank = False)
-    contact = models.PhoneNumberField(db_column = "contact",
-                                      unique = 1,
-                                      null = False,
-                                      blank = False)
+    contact = models.CharField(db_column = "contact",
+                               max_length = 15,
+                               unique = 1,
+                               null = False,
+                               blank = False)
     email = models.EmailField(db_column = "Email",
                               null = False,
                               blank = False)
@@ -27,32 +27,26 @@ class Customer(models.Model):
                                null = False,
                                blank = False,
                                max_length = 50)
+    def __str__(self):
+        return self.name
     
 class Category(models.Model):
     name = models.CharField(db_column = "Name",
                             null = False,
                             blank = False,
                             max_length = 10)
-    
+    def __str__(self):
+        return self.name
     
 class Flavor(models.Model):
     name = models.CharField(db_column = "Name",
                             null = False,
                             blank = False,
                             max_length = 10)
+    def __str__(self):
+        return self.name
     
-class Feedback(models.Model):
-    rating = models. IntegerField(db_column = "Rating",
-                                  blank = True,
-                                  null = True)
-    review = models.CharField(db_column = "Review",
-                            null = True,
-                            blank = False,
-                            max_length = 100)
-    #Order
-    #Desert
-
-class Desert(models.Model):
+class Dessert(models.Model):
     name = models.CharField(db_column = "Name",
                             null = False,
                             blank = False,
@@ -63,85 +57,152 @@ class Desert(models.Model):
     description = models.CharField(db_column = "Description",
                             null = True,
                             max_length = 100)
-    #Desert_cat relation
+    #Dessert_cat relation
     category = models.ForeignKey(Category,
                                  db_column = 'Category',
                                  on_delete = models.CASCADE,blank=True,
                                  null=True)
+    flavor = models.ForeignKey(Flavor,
+                               db_column = 'Flavor',
+                               on_delete = models.CASCADE,
+                               null=True,
+                               blank = False)
+    def __str__(self):
+        return self.name
 class Unit(models.Model):
-    unitname = models.CharField(db_column = "Name",
+    name = models.CharField(db_column = "Name",
                             null = False,
-                            max_length = 10,blank=True,
-                            null=True)
+                            max_length = 10,
+                            blank=True)
+    def __str__(self):
+        return self.name
 
 
 class Order(models.Model):
+    choices = (
+                ('Pending','Pending'),
+                ('Confirmed','Confirmed'),
+                ('On The Way','On The Way'),
+                ('Delivered','Delivered'),
+                ('Cancel','Cancel')
+            )
+    paychoices = (
+                ('COD','COD'),
+                ('CARD','CARD')
+            )
     date = models.DateField(auto_now=True)
-    status = models.CharField(choices = (
-                                        ('Pending','Pending'),
-                                        ('Confirmed','Confirmed'),
-                                        ('On The Way','On The Way'),
-                                        ('Delivered','Delivered')
-                                    ),
-                                    blank=True,
-                                    null=True)
+    status = models.CharField(max_length = 10,
+                              choices = choices,
+                              blank=True,
+                              null=True)
     totalamount = models.FloatField(blank=True,
                                     null=True)
-    paymethod = models.CharField(choices = (
-                                        ('COD','COD'),
-                                        ('CARD','CARD')
-                                    ),
-                                    blank=True,
-                                    null=True)
+    paymethod = models.CharField(max_length = 10,
+                                 choices = paychoices,
+                                 blank=True,
+                                 null=True)
+    rating = models. IntegerField(db_column = "Rating",
+                                  blank = True,
+                                  null = True)
+    review = models.CharField(db_column = "Review",
+                            null = True,
+                            blank = True,
+                            max_length = 100)
+    customer = models.ForeignKey(Customer,
+                                 db_column = 'customer_id',
+                                 blank=False,
+                                 null=False,
+                                 on_delete = models.CASCADE)
+    def __str__(self):
+        return f"Order#{self.id}: {self.customer.name}\'s"
     
+
 #RelationShips:
+
 #cat_flavour
+    #
 class FlavorCat(models.Model):
-    Flavor = models.ManyToManyField(Flavor,
-                                    db_column = "Flavor",blank=True,
-                                    null=True)
-    Category = models.ManyToManyField(Category,
-                                      db_column = "Category",blank=True,
-                                      null=True)
+    flavor = models.ForeignKey(Flavor,
+                               on_delete = models.CASCADE,
+                               null = True,
+                               blank = True, 
+                               db_column = "Flavor")
+    category = models.ForeignKey(Category,
+                               on_delete = models.CASCADE,
+                               null = True,
+                               blank = True, 
+                               db_column = "Category")
+    def __str__(self):
+        return f"{self.category.first()}: {self.flavor.first()}"
 
 class Wishlist(models.Model):
-    Customer = models.ManyToManyField(Customer,
-                                      db_column = "Customer",blank=True,
-                                      null=True)
-    Desert = models.ManyToManyField(Desert,
-                                    db_column = "Desert",blank=True,
-                                    null=True) 
+    customer = models.OneToOneField(Customer,
+                                   on_delete = models.CASCADE,
+                                   null = True,
+                                   blank = True, 
+                                   db_column = "Customer")
+    dessert = models.ManyToManyField(Dessert,
+                                    db_column = "Dessert")
+    def __str__(self):
+        return f"WishList for Cust#{self.customer.id}"
+    
 #UnitPrice
 class CatalogItem(models.Model):
-    Desert = models.ManyToManyField(Desert,
-                                    db_column = "Desert",blank=True,
-                                    null=True)
-    Unit = models.ManyToManyField(Unit,
-                                  db_column="Unit",blank=True,
-                                  null=True)
-    Price = models.FloatField(default = 0.0,
-                              null=True,
-                              blank = True,blank=True,
-                              null=True)
-# since single customer will have only one cart, there is 
-# no need to insert a layer by making a cart table. We can just add 
-# customer to cartItems
+    dessert = models.ForeignKey(Dessert,
+                                on_delete = models.CASCADE,
+                                null = True,
+                                blank = True, 
+                                db_column = "Dessert")
+    unit = models.ForeignKey(Unit,
+                             on_delete = models.CASCADE,
+                             null = True,
+                             blank = True, 
+                             db_column="Unit")
+    price = models.FloatField(default = 0.0,
+                              null = False,
+                              blank = False)
+    def __str__(self):
+        return f"{self.dessert} in {self.unit}"
+
 class CustomerCart(models.Model):
-    customer = models.ManyToManyField(Customer,
-                                      db_column = 'Customer',blank=True,
-                                      null=True)
-
-
+    customer = models.OneToOneField(Customer, 
+                                    on_delete = models.CASCADE,
+                                    db_column = 'Customer')
+    def __str__(self):
+        return f"{self.customer}'s Cart"
+    
 # New relation between CatalogueItem and Cart:    
 # ~ Many CatalogItems can map to single Cart
 # ~ Many Carts can map to single CatalogItem
 # ~ Quantity of that CatalogItem.
 class CartItem(models.Model):
-    catalogitem = models.ManyToManyField(CatalogItem,
-                                         db_column = 'CatalogItem',blank=True,
-                                         null=True)
+    catalogitem = models.ForeignKey(CatalogItem,
+                                    on_delete = models.CASCADE,
+                                    null = True,
+                                    blank = True, 
+                                    db_column = 'CatalogItem')
     cart = models.ForeignKey(CustomerCart,
-                             db_column = 'CustomerCart',blank=True,
-                             null=True)
+                                db_column = 'CustomerCart',
+                                blank=True,
+                                null=True,
+                                on_delete = models.CASCADE)
     quantity = models.IntegerField(blank=True,
-    null=True)
+                                   null=True)
+    def __str__(self):
+        return f"Cart#{self.cart.id}: {self.catalogitem}"
+    
+class OrderItem(models.Model):
+    catalogitem = models.ForeignKey(CatalogItem,
+                                    on_delete = models.CASCADE,
+                                    null = True,
+                                    blank = True,
+                                    db_column = 'CatalogItem')
+    order = models.ForeignKey(Order,
+                             db_column = 'Order',
+                             blank=False,
+                             null=False,
+                             on_delete = models.CASCADE)
+    quantity = models.IntegerField(blank=True,
+                                   null=True)
+    def __str__(self):
+        return f"Order#{self.order.id}"
