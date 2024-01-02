@@ -20,5 +20,5 @@ from delicrave import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('custcreate/', view=views.createCustomer),    
+    path("delicrave/", include('delicrave.urls'))    
 ]
