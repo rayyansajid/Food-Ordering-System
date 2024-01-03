@@ -4,15 +4,15 @@ from django.db import models
 
 class Customer(models.Model):
     username = models.CharField(db_column = "UserName",
-                                max_length = 10,
+                                max_length = 15,
                                 null = False,
                                 blank = False)                                
     password = models.CharField(db_column = "Password",
-                                max_length = 10,
+                                max_length = 15,
                                 null = False,
                                 blank = False)
     name =  models.CharField(db_column = "Name",
-                             max_length = 20,
+                             max_length = 30,
                             null = False,
                             blank = False)
     contact = models.CharField(db_column = "contact",
@@ -34,7 +34,7 @@ class Category(models.Model):
     name = models.CharField(db_column = "Name",
                             null = False,
                             blank = False,
-                            max_length = 10)
+                            max_length = 20)
     def __str__(self):
         return self.name
     
@@ -42,7 +42,7 @@ class Flavor(models.Model):
     name = models.CharField(db_column = "Name",
                             null = False,
                             blank = False,
-                            max_length = 10)
+                            max_length = 20)
     def __str__(self):
         return self.name
     
@@ -50,7 +50,7 @@ class Dessert(models.Model):
     name = models.CharField(db_column = "Name",
                             null = False,
                             blank = False,
-                            max_length = 10)
+                            max_length = 20)
     stockquantity = models. IntegerField(db_column = "Stock Quantity",
                                   blank = True,
                                   null = True)
@@ -72,7 +72,7 @@ class Dessert(models.Model):
 class Unit(models.Model):
     name = models.CharField(db_column = "Name",
                             null = False,
-                            max_length = 10,
+                            max_length = 20,
                             blank=True)
     def __str__(self):
         return self.name
