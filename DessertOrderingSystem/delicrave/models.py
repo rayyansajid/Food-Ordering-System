@@ -57,6 +57,13 @@ class Dessert(models.Model):
     description = models.CharField(db_column = "Description",
                             null = True,
                             max_length = 100)
+    unit = models.CharField(null = False,
+                            blank = False, 
+                            db_column="Unit",
+                            max_length = 25)
+    price = models.FloatField(default = 0.0,
+                              null = False,
+                              blank = False)
     #Dessert_cat relation
     category = models.ForeignKey(Category,
                                  db_column = 'Category',
@@ -69,15 +76,6 @@ class Dessert(models.Model):
                                blank = False)
     def __str__(self):
         return self.name
-class Unit(models.Model):
-    name = models.CharField(db_column = "Name",
-                            null = False,
-                            max_length = 20,
-                            blank=True)
-    def __str__(self):
-        return self.name
-
-
 class Order(models.Model):
     choices = (
                 ('Pending','Pending'),
@@ -147,22 +145,6 @@ class Wishlist(models.Model):
         return f"WishList for Cust#{self.customer.id}"
     
 #UnitPrice
-class CatalogItem(models.Model):
-    dessert = models.ForeignKey(Dessert,
-                                on_delete = models.CASCADE,
-                                null = True,
-                                blank = True, 
-                                db_column = "Dessert")
-    unit = models.ForeignKey(Unit,
-                             on_delete = models.CASCADE,
-                             null = True,
-                             blank = True, 
-                             db_column="Unit")
-    price = models.FloatField(default = 0.0,
-                              null = False,
-                              blank = False)
-    def __str__(self):
-        return f"{self.dessert} in {self.unit}"
 
 class CustomerCart(models.Model):
     customer = models.OneToOneField(Customer, 
@@ -172,15 +154,15 @@ class CustomerCart(models.Model):
         return f"{self.customer}'s Cart"
     
 # New relation between CatalogueItem and Cart:    
-# ~ Many CatalogItems can map to single Cart
-# ~ Many Carts can map to single CatalogItem
-# ~ Quantity of that CatalogItem.
+# ~ Many desserts can map to single Cart
+# ~ Many Carts can map to single dessert
+# ~ Quantity of that dessert.
 class CartItem(models.Model):
-    catalogitem = models.ForeignKey(CatalogItem,
+    dessert = models.ForeignKey(Dessert,
                                     on_delete = models.CASCADE,
                                     null = True,
                                     blank = True, 
-                                    db_column = 'CatalogItem')
+                                    db_column = 'Dessert')
     cart = models.ForeignKey(CustomerCart,
                                 db_column = 'CustomerCart',
                                 blank=True,
@@ -189,14 +171,14 @@ class CartItem(models.Model):
     quantity = models.IntegerField(blank=True,
                                    null=True)
     def __str__(self):
-        return f"Cart#{self.cart.id}: {self.catalogitem}"
+        return f"Cart#{self.cart.id}: {self.dessert}"
     
 class OrderItem(models.Model):
-    catalogitem = models.ForeignKey(CatalogItem,
+    dessert = models.ForeignKey(Dessert,
                                     on_delete = models.CASCADE,
                                     null = True,
                                     blank = True,
-                                    db_column = 'CatalogItem')
+                                    db_column = 'dessert')
     order = models.ForeignKey(Order,
                              db_column = 'Order',
                              blank=False,

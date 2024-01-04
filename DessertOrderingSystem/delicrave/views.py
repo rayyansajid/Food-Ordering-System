@@ -68,6 +68,7 @@ from .models import *
 from .serializers import *
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
+from rest_framework.views import APIView
 
 
 class CustomerViewSet(viewsets.ModelViewSet):
@@ -76,26 +77,13 @@ class CustomerViewSet(viewsets.ModelViewSet):
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
 
-    def create(self, request, *args, **kwargs):
-        name = request.data.get('name')
-        username = request.data.get('username')
-        password = request.data.get('password')
-        user = User.objects.create_user(first_name = name,
-                                        username=username,
-                                        password=password)
-        return super().create(request, *args, **kwargs)
-
 
 class CategoryViewSet(viewsets.ModelViewSet):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
 
 class FlavorViewSet(viewsets.ModelViewSet):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
     queryset = Flavor.objects.all()
     serializer_class = FlavorSerializer
 
@@ -104,22 +92,14 @@ class DessertViewSet(viewsets.ModelViewSet):
     queryset = Dessert.objects.all()
     serializer_class = DessertSerializer
 
-
-class UnitViewSet(viewsets.ModelViewSet):
-    queryset = Unit.objects.all()
-    serializer_class = UnitSerializer
-
-
 class OrderViewSet(viewsets.ModelViewSet):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    # authentication_classes = [JWTAuthentication]
+    # permission_classes = [IsAuthenticated]
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
 
 
 class FlavorCatViewSet(viewsets.ModelViewSet):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
     queryset = FlavorCat.objects.all()
     serializer_class = FlavorCatSerializer
 
@@ -129,11 +109,6 @@ class WishlistViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     queryset = Wishlist.objects.all()
     serializer_class = WishlistSerializer
-
-
-class CatalogItemViewSet(viewsets.ModelViewSet):
-    queryset = CatalogItem.objects.all()
-    serializer_class = CatalogItemSerializer
 
 
 class CustomerCartViewSet(viewsets.ModelViewSet):
@@ -151,8 +126,8 @@ class CartItemViewSet(viewsets.ModelViewSet):
 
 
 class OrderItemViewSet(viewsets.ModelViewSet):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    # authentication_classes = [JWTAuthentication]
+    # permission_classes = [IsAuthenticated]
     queryset = OrderItem.objects.all()
     serializer_class = OrderItemSerializer
 
@@ -173,7 +148,37 @@ class LoginView(generics.GenericAPIView):
         token, created = Token.objects.get_or_create(user=user)
         print(created)
         return Response({'token': token.key})
+    
+# class MultipleModelObjCreateView(viewsets.ViewSet):
+#     def get_queryset(self, model):
+#         queryset = {
+#             "Customer" : Customer.objects.all(),
+#             "FlavorCat" : FlavorCat.objects.all(),
+#             "Flavor" : Flavor.objects.all(),
+#             "Category" : Category.objects.all()
+#         }
+#         return queryset[model]
+    
 
+#     def customer(self, request, *args, **kwargs):
+#         print(request)
+#         return Response({'msg':"check 1 2 3"})
+    
+class CustomerCreateView(APIView):
+    def get_queryset(self):
+        return Customer.objects.all()
+    
+    def post(self, request, *args, **kwargs):
+        name = request.data.get('name')
+        contact = request.data.get('contact')
+        email = request.data.get('email')
+        address = request.data.get('address')
+        username = request.data.get('username')
+        password = request.data.get('password')
+        User.objects.create_user(username=username, password=password, first_name = name)
+        print(Customer.objects.create(request.data))
+        return Response({'msg':'Customer Created'})
+    
 
 class LogoutView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]

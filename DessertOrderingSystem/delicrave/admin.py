@@ -23,7 +23,7 @@ admin.site.register(Flavor)
 # class FeedbackAdmin(admin.ModelAdmin):
 #     list_display  = [field.name for field in Feedback._meta.get_fields()]
     
-admin.site.register(Unit)
+# admin.site.register(Unit)
 # class UnitAdmin(admin.ModelAdmin):
 #     list_display  = [field.name for field in Unit._meta.get_fields()]
     
@@ -35,7 +35,7 @@ admin.site.register(FlavorCat)
         
 admin.site.register(Wishlist)
             
-admin.site.register(CatalogItem)
+# admin.site.register(CatalogItem)
 
 admin.site.register(CustomerCart)
 

@@ -11,14 +11,13 @@ router.register(r'customers', CustomerViewSet)
 router.register(r'categories', CategoryViewSet)
 router.register(r'flavors', FlavorViewSet)
 router.register(r'desserts', DessertViewSet)
-router.register(r'units', UnitViewSet)
 router.register(r'orders', OrderViewSet)
 router.register(r'flavorcats', FlavorCatViewSet)
 router.register(r'wishlists', WishlistViewSet)
-router.register(r'catalogitems', CatalogItemViewSet)
 router.register(r'customercarts', CustomerCartViewSet)
 router.register(r'cartitems', CartItemViewSet)
 router.register(r'orderitems', OrderItemViewSet)
+# router.register(r'custcreate', CustomerCreateView)
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -27,6 +26,7 @@ urlpatterns = [
     # path('customer/<int:pk>/', CustomerViewSet.as_view({'get':'retrieve'}))
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('createcustomer/', CustomerCreateView.as_view(), name="Create Customer"),
 ]
 
 # from django.urls import path
