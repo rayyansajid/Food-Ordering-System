@@ -18,12 +18,12 @@ class FlavorSerializer(serializers.ModelSerializer):
         fields = ('id', 'name')
 
 class DessertSerializer(serializers.ModelSerializer):
-    category = CategorySerializer(read_only=True)
-    flavor = FlavorSerializer(read_only=True)
+    # category = CategorySerializer(read_only=True)
+    # flavor = FlavorSerializer(read_only=True)
 
     class Meta:
         model = Dessert
-        fields = ('id', 'name', 'stockquantity', 'description', 'category', 'flavor')
+        fields = ('id', 'name', 'stockquantity', 'description', 'category', 'flavor', 'unit')
 
     def to_representation(self, instance):
         response=super().to_representation(instance)
@@ -32,7 +32,7 @@ class DessertSerializer(serializers.ModelSerializer):
         return response
 
 class OrderSerializer(serializers.ModelSerializer):
-    customer = CustomerSerializer(read_only=True)
+    # customer = CustomerSerializer(read_only=True)
 
     class Meta:
         model = Order
@@ -44,8 +44,8 @@ class OrderSerializer(serializers.ModelSerializer):
         return response
 
 class FlavorCatSerializer(serializers.ModelSerializer):
-    flavor = FlavorSerializer(read_only=True)
-    category = CategorySerializer(read_only=True)
+    # flavor = FlavorSerializer(read_only=True)
+    # category = CategorySerializer(read_only=True)
 
     class Meta:
         model = FlavorCat
@@ -64,8 +64,8 @@ class WishlistSerializer(serializers.ModelSerializer):
 #     "dessert_ids": [2, 3, 4]
 #   }
 
-    customer = CustomerSerializer(read_only=True)
-    dessert = DessertSerializer(many=True, read_only=True)
+    # customer = CustomerSerializer(read_only=True)
+    # dessert = DessertSerializer(many=True, read_only=True)
 
     customer_id = serializers.PrimaryKeyRelatedField(
         queryset=Customer.objects.all(),
@@ -96,7 +96,7 @@ class WishlistSerializer(serializers.ModelSerializer):
 
 
 class CustomerCartSerializer(serializers.ModelSerializer):
-    customer = CustomerSerializer(read_only=True)
+    # customer = CustomerSerializer(read_only=True)
 
     class Meta:
         model = CustomerCart
@@ -108,8 +108,8 @@ class CustomerCartSerializer(serializers.ModelSerializer):
         return response
 
 class CartItemSerializer(serializers.ModelSerializer):
-    dessert = DessertSerializer(read_only=True)
-    cart = CustomerCartSerializer(read_only=True)
+    # dessert = DessertSerializer(read_only=True)
+    # cart = CustomerCartSerializer(read_only=True)
 
     class Meta:
         model = CartItem
@@ -122,8 +122,8 @@ class CartItemSerializer(serializers.ModelSerializer):
         return response
 
 class OrderItemSerializer(serializers.ModelSerializer):
-    dessert = DessertSerializer(read_only=True)
-    order = OrderSerializer(read_only=True)
+    # dessert = DessertSerializer(read_only=True)
+    # order = OrderSerializer(read_only=True)
 
     class Meta:
         model = OrderItem
@@ -132,6 +132,6 @@ class OrderItemSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         response=super().to_representation(instance)
         response['dessert'] = DessertSerializer(instance.dessert).data
-        response['order']=CategorySerializer(instance.order).data
+        response['order'] = OrderSerializer(instance.order).data
         return response
 

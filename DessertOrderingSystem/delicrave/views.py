@@ -187,3 +187,9 @@ class LogoutView(generics.GenericAPIView):
         request.user.auth_token.delete()
         return Response({'message': 'Logout successful'})
     
+
+class ItemsByOrderViewSet(generics.ListAPIView):
+    serializer_class = OrderItemSerializer
+    def get_queryset(self):
+        OrderId=self.kwargs["order_id"]
+        return OrderItem.objects.filter(order=Order.objects.get(id=OrderId))

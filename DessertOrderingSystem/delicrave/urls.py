@@ -27,6 +27,7 @@ urlpatterns = [
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('createcustomer/', CustomerCreateView.as_view(), name="Create Customer"),
+    path('itemsbyOrder/<int:order_id>/',ItemsByOrderViewSet.as_view(), name="ItemsByOrder"),
 ]
 
 # from django.urls import path

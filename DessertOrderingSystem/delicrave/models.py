@@ -57,8 +57,8 @@ class Dessert(models.Model):
     description = models.CharField(db_column = "Description",
                             null = True,
                             max_length = 100)
-    unit = models.CharField(null = False,
-                            blank = False, 
+    unit = models.CharField(null = True,
+                            blank = True, 
                             db_column="Unit",
                             max_length = 25)
     price = models.FloatField(default = 0.0,
@@ -92,7 +92,8 @@ class Order(models.Model):
     status = models.CharField(max_length = 10,
                               choices = choices,
                               blank=True,
-                              null=True)
+                              null=True,
+                              default = "Pending")
     totalamount = models.FloatField(blank=True,
                                     null=True)
     paymethod = models.CharField(max_length = 10,
