@@ -202,6 +202,12 @@ class OrdersByCustViewSet(generics.ListAPIView):
         custId=self.kwargs["cust_id"]
         return Order.objects.filter(customer=Customer.objects.get(id=custId))
     
+class DessertsByCatViewSet(generics.ListAPIView):
+    serializer_class = DessertSerializer
+    def get_queryset(self):
+        dsrtId=self.kwargs["dsrt_id"]
+        return Dessert.objects.filter(category = Category.objects.get(id = dsrtId))
+    
 def custom_statistics(request):
     # today's date:
     today = datetime.now().date()

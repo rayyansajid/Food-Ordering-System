@@ -30,6 +30,7 @@ urlpatterns = [
     path('itemsbyOrder/<int:order_id>/',ItemsByOrderViewSet.as_view(), name="ItemsByOrder"),
     path('OrdersByCust/<int:cust_id>/',OrdersByCustViewSet.as_view(), name="OrdersByCust"),
     path('custom_statistics/', custom_statistics, name='custom_statistics'),
+    path('dessertsbycategory/<int:dsrt_id>/', DessertsByCatViewSet.as_view(), name = "Desserts By Category")
 ]
 
 # from django.urls import path
