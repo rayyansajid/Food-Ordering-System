@@ -28,6 +28,8 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('createcustomer/', CustomerCreateView.as_view(), name="Create Customer"),
     path('itemsbyOrder/<int:order_id>/',ItemsByOrderViewSet.as_view(), name="ItemsByOrder"),
+    path('OrdersByCust/<int:cust_id>/',OrdersByCustViewSet.as_view(), name="OrdersByCust"),
+    path('custom_statistics/', custom_statistics, name='custom_statistics'),
 ]
 
 # from django.urls import path

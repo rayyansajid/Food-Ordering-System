@@ -69,6 +69,9 @@ from .serializers import *
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from rest_framework.views import APIView
+from django.http import JsonResponse
+from django.db.models import Count, Sum
+from datetime import datetime, timedelta
 
 
 class CustomerViewSet(viewsets.ModelViewSet):
@@ -93,8 +96,8 @@ class DessertViewSet(viewsets.ModelViewSet):
     serializer_class = DessertSerializer
 
 class OrderViewSet(viewsets.ModelViewSet):
-    # authentication_classes = [JWTAuthentication]
-    # permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
 
@@ -126,8 +129,8 @@ class CartItemViewSet(viewsets.ModelViewSet):
 
 
 class OrderItemViewSet(viewsets.ModelViewSet):
-    # authentication_classes = [JWTAuthentication]
-    # permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
     queryset = OrderItem.objects.all()
     serializer_class = OrderItemSerializer
 
@@ -170,12 +173,11 @@ class CustomerCreateView(APIView):
     
     def post(self, request, *args, **kwargs):
         name = request.data.get('name')
-        contact = request.data.get('contact')
-        email = request.data.get('email')
-        address = request.data.get('address')
         username = request.data.get('username')
         password = request.data.get('password')
-        User.objects.create_user(username=username, password=password, first_name = name)
+        User.objects.create_user(username=username,
+                                 password=password,
+                                 first_name = name)
         print(Customer.objects.create(request.data))
         return Response({'msg':'Customer Created'})
     
@@ -193,3 +195,48 @@ class ItemsByOrderViewSet(generics.ListAPIView):
     def get_queryset(self):
         OrderId=self.kwargs["order_id"]
         return OrderItem.objects.filter(order=Order.objects.get(id=OrderId))
+    
+class OrdersByCustViewSet(generics.ListAPIView):
+    serializer_class = OrderSerializer
+    def get_queryset(self):
+        custId=self.kwargs["cust_id"]
+        return Order.objects.filter(customer=Customer.objects.get(id=custId))
+    
+def custom_statistics(request):
+    # today's date:
+    today = datetime.now().date()
+    print(f"today: {today}\n")
+
+    orderitems_today = OrderItem.objects.filter(order__date=today)
+    total_items_sold_today = orderitems_today.aggregate(total_items=Sum('quantity'))['total_items'] or 0
+
+    total_orders_today = Order.objects.filter(date=today).count()
+
+    total_desserts = Dessert.objects.count()
+
+    total_categories = Category.objects.count()
+
+    total_flavors = Flavor.objects.count()
+
+    ThisMonthOrderItems = OrderItem.objects.filter(order__date__month=today.month)
+    selling_desserts = ThisMonthOrderItems.values('dessert__name').annotate(total_items_sold=Sum('quantity'))
+    top_selling_desserts = selling_desserts.order_by('-total_items_sold')[:5]
+
+    start_of_week = today - timedelta(days=today.weekday())
+
+    ThisWeeksOrders = Order.objects.filter(date__gte=start_of_week)
+    daily_sales = ThisWeeksOrders.values('date').annotate(total_sale=Sum('totalamount'))
+
+    monthly_sales = Order.objects.values('date__month').annotate(total_sale=Sum('totalamount'))
+
+    response_data = {
+        'daysell': total_items_sold_today,
+        'dayorders': total_orders_today,
+        'totalnoofdesserts': total_desserts,
+        'totalcategories': total_categories,
+        'totalflavors': total_flavors,
+        'topsellingdessert': list(top_selling_desserts),
+        'dailysell': list(daily_sales),
+        'monthlysale': list(monthly_sales)
+    }
+    return JsonResponse(response_data)

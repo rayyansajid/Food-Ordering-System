@@ -134,4 +134,3 @@ class OrderItemSerializer(serializers.ModelSerializer):
         response['dessert'] = DessertSerializer(instance.dessert).data
         response['order'] = OrderSerializer(instance.order).data
         return response
-
