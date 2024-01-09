@@ -72,6 +72,8 @@ from rest_framework.views import APIView
 from django.http import JsonResponse
 from django.db.models import Count, Sum
 from datetime import datetime, timedelta
+from django.shortcuts import get_object_or_404
+
 
 
 class CustomerViewSet(viewsets.ModelViewSet):
@@ -152,21 +154,6 @@ class LoginView(generics.GenericAPIView):
         print(created)
         return Response({'token': token.key})
     
-# class MultipleModelObjCreateView(viewsets.ViewSet):
-#     def get_queryset(self, model):
-#         queryset = {
-#             "Customer" : Customer.objects.all(),
-#             "FlavorCat" : FlavorCat.objects.all(),
-#             "Flavor" : Flavor.objects.all(),
-#             "Category" : Category.objects.all()
-#         }
-#         return queryset[model]
-    
-
-#     def customer(self, request, *args, **kwargs):
-#         print(request)
-#         return Response({'msg':"check 1 2 3"})
-    
 class CustomerCreateView(APIView):
     def get_queryset(self):
         return Customer.objects.all()
@@ -202,47 +189,73 @@ class OrdersByCustViewSet(generics.ListAPIView):
         custId=self.kwargs["cust_id"]
         return Order.objects.filter(customer=Customer.objects.get(id=custId))
     
+class CartItemsByCustViewSet(generics.ListAPIView):
+    serializer_class = CartItemSerializer
+    def get_queryset(self):
+        custId = self.kwargs["cust_id"]
+        customer = Customer.objects.get(id = custId)
+        print(customer)
+        cart = CustomerCart.objects.get(customer = customer)
+        print(CartItem.objects.filter(cart=cart))
+        return CartItem.objects.filter(cart=cart)
+    
 class DessertsByCatViewSet(generics.ListAPIView):
     serializer_class = DessertSerializer
     def get_queryset(self):
         dsrtId=self.kwargs["dsrt_id"]
         return Dessert.objects.filter(category = Category.objects.get(id = dsrtId))
     
-def custom_statistics(request):
-    # today's date:
-    today = datetime.now().date()
-    print(f"today: {today}\n")
+class OrderHistoryViewset(generics.ListAPIView):
+    serializer_class = OrderSerializer
+    def get_queryset(self):
+        custId = self.kwargs["cust_id"]
+        return Order.objects.filter(customer = Customer.objects.get(id = custId)).exclude(status = "Pending") 
+                                    # status__exclude = "Pending")
+    
+class CustomStatsViewSet(APIView):
+    def get(request):
+        # today's date:
+        today = datetime.now().date()
+        print(f"today: {today}\n")
 
-    orderitems_today = OrderItem.objects.filter(order__date=today)
-    total_items_sold_today = orderitems_today.aggregate(total_items=Sum('quantity'))['total_items'] or 0
+        orderitems_today = OrderItem.objects.filter(order__date=today)
+        total_items_sold_today = orderitems_today.aggregate(total_items=Sum('quantity'))['total_items'] or 0
 
-    total_orders_today = Order.objects.filter(date=today).count()
+        total_orders_today = Order.objects.filter(date=today).count()
 
-    total_desserts = Dessert.objects.count()
+        total_desserts = Dessert.objects.count()
 
-    total_categories = Category.objects.count()
+        total_categories = Category.objects.count()
 
-    total_flavors = Flavor.objects.count()
+        total_flavors = Flavor.objects.count()
 
-    ThisMonthOrderItems = OrderItem.objects.filter(order__date__month=today.month)
-    selling_desserts = ThisMonthOrderItems.values('dessert__name').annotate(total_items_sold=Sum('quantity'))
-    top_selling_desserts = selling_desserts.order_by('-total_items_sold')[:5]
+        ThisMonthOrderItems = OrderItem.objects.filter(order__date__month=today.month)
+        selling_desserts = ThisMonthOrderItems.values('dessert__name').annotate(total_items_sold=Sum('quantity'))
+        top_selling_desserts = selling_desserts.order_by('-total_items_sold')[:5]
 
-    start_of_week = today - timedelta(days=today.weekday())
+        start_of_week = today - timedelta(days=today.weekday())
 
-    ThisWeeksOrders = Order.objects.filter(date__gte=start_of_week)
-    daily_sales = ThisWeeksOrders.values('date').annotate(total_sale=Sum('totalamount'))
+        ThisWeeksOrders = Order.objects.filter(date__gte=start_of_week)
+        daily_sales = ThisWeeksOrders.values('date').annotate(total_sale=Sum('totalamount'))
 
-    monthly_sales = Order.objects.values('date__month').annotate(total_sale=Sum('totalamount'))
+        monthly_sales = Order.objects.values('date__month').annotate(total_sale=Sum('totalamount'))
 
-    response_data = {
-        'daysell': total_items_sold_today,
-        'dayorders': total_orders_today,
-        'totalnoofdesserts': total_desserts,
-        'totalcategories': total_categories,
-        'totalflavors': total_flavors,
-        'topsellingdessert': list(top_selling_desserts),
-        'dailysell': list(daily_sales),
-        'monthlysale': list(monthly_sales)
-    }
-    return JsonResponse(response_data)
+        response_data = {
+            'daysell': total_items_sold_today,
+            'dayorders': total_orders_today,
+            'totalnoofdesserts': total_desserts,
+            'totalcategories': total_categories,
+            'totalflavors': total_flavors,
+            'topsellingdessert': list(top_selling_desserts),
+            'dailysell': list(daily_sales),
+            'monthlysale': list(monthly_sales)
+        }
+        return JsonResponse(response_data)
+
+
+class DessertsForCustomerView(APIView):
+    def get(self, request, custid):
+        customer = get_object_or_404(Customer, id=custid)
+        desserts_for_customer = Dessert.objects.filter(wishlist__customer=customer)
+        serializer = DessertSerializer(desserts_for_customer, many=True)
+        return Response(serializer.data)

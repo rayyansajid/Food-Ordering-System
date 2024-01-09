@@ -118,7 +118,7 @@ class CartItemSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         response=super().to_representation(instance)
         response['dessert'] = DessertSerializer(instance.dessert).data
-        response['cart']=CategorySerializer(instance.cart).data
+        response['cart'] = CustomerCartSerializer(instance.cart).data
         return response
 
 class OrderItemSerializer(serializers.ModelSerializer):

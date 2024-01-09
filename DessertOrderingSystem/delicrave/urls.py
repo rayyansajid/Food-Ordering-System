@@ -29,8 +29,11 @@ urlpatterns = [
     path('createcustomer/', CustomerCreateView.as_view(), name="Create Customer"),
     path('itemsbyOrder/<int:order_id>/',ItemsByOrderViewSet.as_view(), name="ItemsByOrder"),
     path('OrdersByCust/<int:cust_id>/',OrdersByCustViewSet.as_view(), name="OrdersByCust"),
-    path('custom_statistics/', custom_statistics, name='custom_statistics'),
-    path('dessertsbycategory/<int:dsrt_id>/', DessertsByCatViewSet.as_view(), name = "Desserts By Category")
+    path('custom_statistics/', CustomStatsViewSet.as_view(), name='custom_statistics'),
+    path('dessertsbycategory/<int:dsrt_id>/', DessertsByCatViewSet.as_view(), name = "Desserts By Category"),
+    path('wishlist/<int:custid>/', DessertsForCustomerView.as_view(), name="Dessert For Customer"),
+    path("CartItemsByCust/<int:cust_id>/", CartItemsByCustViewSet.as_view(), name= "Cart Items By Cust"),
+    path('OrderHistory/<int:cust_id>/', OrderHistoryViewset.as_view(), name="Order History By Customer"),
 ]
 
 # from django.urls import path
