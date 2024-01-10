@@ -4,7 +4,8 @@ from delicrave import views
 from rest_framework.routers import DefaultRouter
 from .views import *
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-
+from django.conf import settings
+from django.conf.urls.static import static
 
 router = DefaultRouter()
 router.register(r'customers', CustomerViewSet)
@@ -35,6 +36,8 @@ urlpatterns = [
     path("CartItemsByCust/<int:cust_id>/", CartItemsByCustViewSet.as_view(), name= "Cart Items By Cust"),
     path('OrderHistory/<int:cust_id>/', OrderHistoryViewset.as_view(), name="Order History By Customer"),
 ]
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root= settings.MEDIA_ROOT)
 
 # from django.urls import path
 # from rest_framework.authtoken.views import obtain_auth_token

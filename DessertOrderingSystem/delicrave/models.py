@@ -35,6 +35,9 @@ class Category(models.Model):
                             null = False,
                             blank = False,
                             max_length = 20)
+    image = models.ImageField(upload_to='category_images/', 
+                              null=True, 
+                              blank=True)
     def __str__(self):
         return self.name
     
@@ -64,6 +67,9 @@ class Dessert(models.Model):
     price = models.FloatField(default = 0.0,
                               null = False,
                               blank = False)
+    image = models.ImageField(upload_to='dessert_images/', 
+                              null=True, 
+                              blank=True)
     #Dessert_cat relation
     category = models.ForeignKey(Category,
                                  db_column = 'Category',

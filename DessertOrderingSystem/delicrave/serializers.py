@@ -10,7 +10,7 @@ class CustomerSerializer(serializers.ModelSerializer):
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ('id', 'name')
+        fields = ('id', 'name', 'image')
 
 class FlavorSerializer(serializers.ModelSerializer):
     class Meta:
@@ -23,7 +23,7 @@ class DessertSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Dessert
-        fields = ('id', 'name', 'stockquantity', 'description', 'category', 'flavor', 'unit')
+        fields = ('id', 'name', 'stockquantity', 'description', 'category', 'flavor', 'unit', 'image')
 
     def to_representation(self, instance):
         response=super().to_representation(instance)

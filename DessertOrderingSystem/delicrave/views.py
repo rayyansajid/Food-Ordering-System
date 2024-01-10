@@ -86,7 +86,11 @@ class CustomerViewSet(viewsets.ModelViewSet):
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-
+    def perform_create(self, serializer):
+        if 'image' in self.request.data:
+            serializer.save(image=self.request.data['image'])
+        else:
+            serializer.save()
 
 class FlavorViewSet(viewsets.ModelViewSet):
     queryset = Flavor.objects.all()
@@ -96,6 +100,11 @@ class FlavorViewSet(viewsets.ModelViewSet):
 class DessertViewSet(viewsets.ModelViewSet):
     queryset = Dessert.objects.all()
     serializer_class = DessertSerializer
+    def perform_create(self, serializer):
+        if 'image' in self.request.data:
+            serializer.save(image=self.request.data['image'])
+        else:
+            serializer.save()
 
 class OrderViewSet(viewsets.ModelViewSet):
     authentication_classes = [JWTAuthentication]
