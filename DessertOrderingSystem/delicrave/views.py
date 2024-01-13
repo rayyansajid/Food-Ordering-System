@@ -71,10 +71,31 @@ from django.contrib.auth import login, logout, authenticate
 from rest_framework.views import APIView
 from django.http import JsonResponse
 from django.db.models import Count, Sum
+from django.db import transaction
 from datetime import datetime, timedelta
 from django.shortcuts import get_object_or_404
 
+#Start
 
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework.permissions import IsAuthenticated
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        # Add custom claims, including is_superuser
+        token['is_superuser'] = user.is_superuser
+        print(token)
+        print(f"token['is_superuser']: {token['is_superuser']}")
+        return token
+
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
+
+#End
 
 class CustomerViewSet(viewsets.ModelViewSet):
     authentication_classes = [JWTAuthentication]
@@ -159,9 +180,25 @@ class LoginView(generics.GenericAPIView):
         if user is None:
             return Response({'error': 'Invalid Credentials'}, status=401)
 
-        token, created = Token.objects.get_or_create(user=user)
-        print(created)
-        return Response({'token': token.key})
+        # token, created = Token.objects.get_or_create(user=user)
+        # print(created)
+        # return Response({'token': token.key})
+
+        # Check if the user is an admin
+        if user.groups.filter(name='admin').exists():
+            # Generate admin token
+            token, created = Token.objects.get_or_create(user=user)
+            return Response({'token': token.key, 'role': 'admin'})
+
+        # Check if the user is a customer
+        elif user.groups.filter(name='customer').exists():
+            # Generate customer token
+            token, created = Token.objects.get_or_create(user=user)
+            return Response({'token': token.key, 'role': 'customer'})
+
+        # User doesn't belong to any group
+        else:
+            return Response({'error': 'Invalid user role'}, status=401)
     
 class CustomerCreateView(generics.CreateAPIView):
     serializer_class = CustomerSerializer
@@ -178,6 +215,7 @@ class CustomerCreateView(generics.CreateAPIView):
     #     print(request.data)
     #     print(Customer.objects.create(request.data))
     #     return Response({'msg':'Customer Created'})
+    @transaction.atomic
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data = request.data)
         serializer.is_valid(raise_exception=True)
