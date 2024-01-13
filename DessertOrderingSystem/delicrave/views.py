@@ -59,7 +59,7 @@
     #     return Response(dsrt_serializer.data)
 
 
-from rest_framework import viewsets, permissions, generics
+from rest_framework import viewsets, permissions, generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -163,19 +163,30 @@ class LoginView(generics.GenericAPIView):
         print(created)
         return Response({'token': token.key})
     
-class CustomerCreateView(APIView):
-    def get_queryset(self):
-        return Customer.objects.all()
+class CustomerCreateView(generics.CreateAPIView):
+    serializer_class = CustomerSerializer
+    # def get_queryset(self):
+    #     return Customer.objects.all()
     
-    def post(self, request, *args, **kwargs):
-        name = request.data.get('name')
-        username = request.data.get('username')
-        password = request.data.get('password')
-        User.objects.create_user(username=username,
-                                 password=password,
-                                 first_name = name)
-        print(Customer.objects.create(request.data))
-        return Response({'msg':'Customer Created'})
+    # def post(self, request, *args, **kwargs):
+    #     name = request.data.get('name')
+    #     username = request.data.get('username')
+    #     password = request.data.get('password')
+    #     User.objects.create_user(username=username,
+    #                              password=password,
+    #                              first_name = name)
+    #     print(request.data)
+    #     print(Customer.objects.create(request.data))
+    #     return Response({'msg':'Customer Created'})
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data = request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        User.objects.create_user(username=request.data['username'],
+                                 password = request.data['password'],
+                                 first_name = request.data['name'])
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
     
 
 class LogoutView(generics.GenericAPIView):
