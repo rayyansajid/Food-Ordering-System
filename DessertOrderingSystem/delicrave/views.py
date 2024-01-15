@@ -74,28 +74,10 @@ from django.db.models import Count, Sum
 from django.db import transaction
 from datetime import datetime, timedelta
 from django.shortcuts import get_object_or_404
-
-#Start
-
 from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework.permissions import IsAuthenticated
-
-class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
-    @classmethod
-    def get_token(cls, user):
-        token = super().get_token(user)
-
-        # Add custom claims, including is_superuser
-        token['is_superuser'] = user.is_superuser
-        print(token)
-        print(f"token['is_superuser']: {token['is_superuser']}")
-        return token
 
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
-
-#End
 
 class CustomerViewSet(viewsets.ModelViewSet):
     authentication_classes = [JWTAuthentication]
@@ -165,7 +147,18 @@ class OrderItemViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     queryset = OrderItem.objects.all()
     serializer_class = OrderItemSerializer
+    
+    # @transaction.atomic
+    # def create(self, request, *args, **kwargs):    
+    #     serializer = self.get_serializer(data = request.data)
+    #     serializer.is_valid(raise_exception=True)
+    #     self.perform_create(serializer)
+        
+    #     instance = serializer.instance
+    #     print("OrderItem created:", instance)
 
+    #     headers = self.get_success_headers(serializer.data)
+    #     return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 class LoginView(generics.GenericAPIView):
     serializer_class = CustomerSerializer
@@ -220,12 +213,17 @@ class CustomerCreateView(generics.CreateAPIView):
         serializer = self.get_serializer(data = request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
+
+        instance = serializer.instance
+        print("Customer created:", instance)
+        
         User.objects.create_user(username=request.data['username'],
                                  password = request.data['password'],
                                  first_name = request.data['name'])
+        CustomerCart.objects.create(customer = instance)
+
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-    
 
 class LogoutView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]

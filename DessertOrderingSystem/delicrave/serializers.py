@@ -1,5 +1,16 @@
 from rest_framework import serializers
 from .models import *
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        # Add custom claims, including is_superuser
+        token['is_superuser'] = user.is_superuser
+        print(token)
+        print(f"token['is_superuser']: {token['is_superuser']}")
+        return token
 
 class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
@@ -70,13 +81,13 @@ class WishlistSerializer(serializers.ModelSerializer):
     customer_id = serializers.PrimaryKeyRelatedField(
         queryset=Customer.objects.all(),
         source='customer',
-        write_only=True
+        # write_only=True
     )
     dessert_ids = serializers.PrimaryKeyRelatedField(
         queryset=Dessert.objects.all(),
         source='dessert',
         many=True,
-        write_only=True
+        # write_only=True
     )
 
     class Meta:
